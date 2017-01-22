@@ -18,7 +18,7 @@
         android:id="@+id/textView" />
 
     <Button
-        android:text="Button"
+        android:text="Galeria"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
@@ -45,4 +45,15 @@
         android:layout_marginTop="78dp"
         android:layout_below="@+id/selectimg"
         android:layout_toEndOf="@+id/textView" />
+
+    <Button
+        android:text="Enviar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/img"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="23dp"
+        android:id="@+id/send" />
+
+
 </RelativeLayout>

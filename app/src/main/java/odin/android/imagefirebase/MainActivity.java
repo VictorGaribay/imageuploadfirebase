@@ -2,6 +2,7 @@ package odin.android.imagefirebase;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -15,20 +16,27 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity {
+import java.io.IOException;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
+    private static final int PICK_IMAGE_REQUEST=234;
 
     private Button Selectimg;
-
+    private ImageView imageView;
+    private Button Enviar;
 
     private StorageReference Storage;
 
-    private static final int GALLERY_INTENT=2;
+    private Uri filepath;
 
-    private ProgressDialog mProgressDialog;
+
+
 
 
     @Override
@@ -42,25 +50,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         Selectimg =(Button) findViewById(R.id.selectimg);
-
-        mProgressDialog =new ProgressDialog(this);
-
-
+        Enviar = (Button) findViewById(R.id.send);
+        imageView = (ImageView) findViewById(R.id.img);
 
 
 
 
 
 
-        Selectimg.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view)
-            {
-                Intent intent= new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, GALLERY_INTENT);
-            }
-        });
+        Selectimg.setOnClickListener(this);
+        Enviar.setOnClickListener(this);
+
+
+
 
     }
 
@@ -71,24 +73,75 @@ public class MainActivity extends AppCompatActivity {
     protected void  onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==GALLERY_INTENT && resultCode==RESULT_OK)
+        if (requestCode==PICK_IMAGE_REQUEST && resultCode==RESULT_OK && data !=null && data.getData()!=null)
         {
-            mProgressDialog.setMessage("Cargando....");
-            mProgressDialog.show();
+            filepath =data.getData();
 
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filepath);
+                imageView.setImageBitmap(bitmap);
 
-            Uri uri=data.getData();
-            StorageReference filepath= Storage.child("Photos").child(uri.getLastPathSegment());
-            filepath.putFile(uri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        }
+
+    private void uploadFile()
+    {
+
+        if (filepath !=null) {
+            final ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setTitle("Cargando...");
+            progressDialog.show();
+            StorageReference riversRef = Storage.child("images/profile.jpg");
+
+            riversRef.putFile(filepath)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // Get a URL to the uploaded content
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "Archivo cargado", Toast.LENGTH_LONG).show();
+
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
 
-                    Toast.makeText(MainActivity.this, "upload Done", Toast.LENGTH_LONG).show();
-                    mProgressDialog.dismiss();
+                    double progress=(100.0*taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
+                    progressDialog.setMessage(((int) progress)+"% Cargando...");
                 }
             });
         }
+    }
 
+    private void  showFileImage()
+    {
+        Intent intent= new Intent();
+        intent.setType("image/*");
+        intent.setAction(intent.ACTION_GET_CONTENT);
+        startActivityForResult(intent.createChooser(intent, "seleccionar imagen"), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onClick(View view) {
+        if(view== Selectimg)
+        {
+            showFileImage();
+        } else if (view==Enviar)
+        {
+                uploadFile();
         }
     }
+}
 
