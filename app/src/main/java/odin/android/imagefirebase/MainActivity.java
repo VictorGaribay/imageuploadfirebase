@@ -29,7 +29,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
 
-
+    int clicks = 0;
     private static final int PICK_IMAGE_REQUEST=200;
 
     private static final int CAMERA_REQUEST_CODE = 300;
@@ -100,12 +100,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void uploadFile()
     {
-
         if (filepath !=null) {
+            clicks++;
+
             final ProgressDialog progressDialog = new ProgressDialog(this);
             progressDialog.setTitle("Cargando...");
             progressDialog.show();
-            StorageReference riversRef = Storage.child("images/profile.jpg");
+            StorageReference riversRef = Storage.child("images/foto N:"+clicks+"");
 
             riversRef.putFile(filepath)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -166,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+
         if(view== Selectimg)
         {
             showFileImage();
