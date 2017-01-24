@@ -28,13 +28,13 @@
         android:layout_alignParentEnd="true" />
 
     <Button
-        android:text="camera"
+        android:text="Camara"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/selectimg"
         android:layout_alignParentStart="true"
         android:layout_marginStart="49dp"
-        android:id="@+id/camera" />
+        android:id="@+id/camera"/>
 
     <ImageView
         android:id="@+id/img"
