@@ -31,40 +31,28 @@ import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-
     int clicks = 0;
     private static final int PICK_IMAGE_REQUEST=200;
-
     private static final int CAMERA_REQUEST_CODE = 300;
-    private final int PHOTO_CODE = 0;
 
     private Button Selectimg;
     private ImageView imageView;
     private Button Enviar;
     private Button Camera;
-
     private StorageReference Storage;
-
     private Uri filepath;
-    private Uri filepath2;
-    private   Bundle extras;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
         Storage= FirebaseStorage.getInstance().getReference();
-
 
         Selectimg =(Button) findViewById(R.id.selectimg);
         Enviar = (Button) findViewById(R.id.send);
         imageView = (ImageView) findViewById(R.id.img);
         Camera= (Button) findViewById(R.id.camera);
-
 
         Selectimg.setOnClickListener(this);
         Enviar.setOnClickListener(this);
@@ -87,19 +75,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
         } else if (requestCode == CAMERA_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-           if(filepath2 != null){
-               Uri selectedImage = filepath2;
+           if(filepath != null){
+               Uri selectedImage = filepath;
                getContentResolver().notifyChange(selectedImage, null);
-               Bitmap reducedSizeBitmap = getBitmap(filepath2.getPath());
+               Bitmap reducedSizeBitmap = getBitmap(filepath.getPath());
                if(reducedSizeBitmap != null){
                    imageView.setImageBitmap(reducedSizeBitmap);
                    Button uploadImageButton = (Button) findViewById(R.id.send);
                    uploadImageButton.setVisibility(View.VISIBLE);
                }else{
-                   Toast.makeText(this,"Error while capturing Image",Toast.LENGTH_LONG).show();
+                   Toast.makeText(this,"Error mientras se captura imagen",Toast.LENGTH_LONG).show();
                }
-           }else{
-               Toast.makeText(this,"Error while capturing Image",Toast.LENGTH_LONG).show();
            }
        }
 
@@ -203,43 +189,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-        else if (filepath2 !=null )
-        {
-            clicks++;
 
-
-
-            final ProgressDialog progressDialog = new ProgressDialog(this);
-            progressDialog.setTitle("Cargando...");
-            progressDialog.show();
-            StorageReference riversRef = Storage.child("images/foto N:"+clicks+"");
-
-            riversRef.putFile(filepath2)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            // Get a URL to the uploaded content
-                            progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), "Archivo cargado", Toast.LENGTH_LONG).show();
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            progressDialog.dismiss();
-                            Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-
-                    double progress=(100.0*taskSnapshot.getBytesTransferred())/taskSnapshot.getTotalByteCount();
-                    progressDialog.setMessage(((int) progress)+"% Cargando...");
-                }
-            });
-
-        }
     }
 
     private void  showFileImage()
@@ -249,42 +199,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.setAction(intent.ACTION_GET_CONTENT);
         startActivityForResult(intent.createChooser(intent, "seleccionar imagen"), PICK_IMAGE_REQUEST);
     }
-    private void openCamera() {
 
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.setType("image/*");
-        intent.setAction(intent.ACTION_GET_CONTENT);
-            startActivityForResult(intent, PHOTO_CODE);
-
-
-        }
 
     private void cameraFileImage()
     {
-
-       /* final Intent intent = new Intent(
-                android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        getParent().startActivityForResult(intent, CAMERA_REQUEST_CODE);
-
-*/
-      /*  Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
-
-        }*/
-
 
 
         Intent chooserIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         File f = new File(Environment.getExternalStorageDirectory(), "POST_IMAGE.jpg");
         chooserIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-        filepath2 = Uri.fromFile(f);
+        filepath = Uri.fromFile(f);
         startActivityForResult(chooserIntent, CAMERA_REQUEST_CODE);
 
     }
-
-
-
 
     @Override
     public void onClick(View view) {
